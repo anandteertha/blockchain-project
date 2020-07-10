@@ -13,7 +13,7 @@ contract charity {
     string bankName;
     uint id;
     bytes32 hash;
-    address address_of_charity;
+    string address_of_charity;
     string  ether_coins;
 
 
@@ -26,7 +26,8 @@ contract charity {
     string bankName;
     uint id;
     bytes32 hash;
-    address address_of_organisation;
+    string address_of_organisation;
+    string ether_coins;
 
 
 
@@ -34,9 +35,9 @@ contract charity {
 
   constructor() public {
 
-      createCharity("anand_charity", "welcome to anand's charity, this is a default charity as I created this web page","bankacc","bankname",0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c,"0");
+      createCharity("anand_charity", "welcome to anand's charity, this is a default charity as I created this web page","bankacc","bankname","0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c","0000");
 
-      createOrganisation("anand_organisation","bank account","bank name",0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c);
+      createOrganisation("anand_organisation","bank account","bank name","0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c","0000");
   }
 
   mapping(uint => charity_structre) public charitys;
@@ -44,41 +45,33 @@ contract charity {
 
   mapping(uint => personOrOrganisation_structure) public org;
 
-  event charityCreated(
+  struct transactions {
 
-    string name,
-    string description,
-    string bankacc,
-    string bankname,
-    uint id,
-    bytes32 hash,
-    address address_of_charity
+    string address_of_charity;
+    string address_of_organisation;
+    string amount_sent;
+    uint id;
 
-  );
+  }
 
+  uint public transaction_count = 0;
 
-  event organisationCreated(
+  mapping(uint => transactions) public transaction_dict;
 
 
-    string name,
-    string bankacc,
-    string bankname,
-    uint id,
-    bytes32 hash,
-    address address_of_organisation
-  );
 
 
-  function createCharity(string memory _name, string memory _description, string memory _bankacc, string memory _bankname, address _address, string memory _ether_coins) public returns(uint){
+  function createCharity(string memory _name, string memory _description, string memory _bankacc, string memory _bankname, string memory _address, string memory _ether_coins) public returns(uint){
 
       charity_count++;
+      //uint newEther_coins  =  uint(_ether_coins);
       bytes memory name_byte = bytes(_name);
       bytes memory description_byte = bytes(_description);
       bytes memory bankacc_byte = bytes(_bankacc);
       bytes memory bankname_byte = bytes(_bankname);
       //string memory newStr = string(_address);
-      //bytes memory address_byte = bytes(_address);
-      string memory lengthabc = new string(name_byte.length + description_byte.length + bankacc_byte.length + bankname_byte.length );
+      bytes memory address_byte = bytes(_address);
+      string memory lengthabc = new string(name_byte.length + description_byte.length + bankacc_byte.length + bankname_byte.length + address_byte.length);
       bytes memory hash = bytes(lengthabc);
       uint k = 0;
       for(uint i =0;i < name_byte.length; i++){
@@ -97,13 +90,13 @@ contract charity {
           hash[k] = bankname_byte[i];
           k++;
       }
-      /*
+
       for(uint i = 0;i < address_byte.length; i++ ){
 
           hash[k] = address_byte[i];
           k++;
       }
-      */
+
 
       bytes32 hash_address = keccak256(hash);
       //charitys[charity_count] = charity_structre(_name,_description,_bankacc,_bankname,charity_count,hash_address,_address);
@@ -124,15 +117,15 @@ contract charity {
   }
 
 
-  function createOrganisation(string memory _name, string memory _bankacc, string memory _bankname, address _address) public returns(uint){
+  function createOrganisation(string memory _name, string memory _bankacc, string memory _bankname, string memory _address, string memory _ether_coins) public returns(uint){
 
     org_count ++;
 
     bytes memory name_byte = bytes(_name);
     bytes memory acc_byte = bytes(_bankacc);
     bytes memory bankname_byte = bytes(_bankname);
-    //bytes memory address_byte = bytes(_address);
-    string memory lengthabc = new string(name_byte.length + acc_byte.length + bankname_byte.length );
+    bytes memory address_byte = bytes(_address);
+    string memory lengthabc = new string(name_byte.length + acc_byte.length + bankname_byte.length + address_byte.length );
     bytes memory hash = bytes(lengthabc);
 
     uint k = 0;
@@ -157,14 +150,14 @@ contract charity {
       k++;
     }
 
-    /*
+
     for(uint i = 0;i < address_byte.length; i++) {
 
       hash[k] = address_byte[i];
       k++;
 
     }
-    */
+
 
 
     bytes32 hash_address = keccak256(hash);
@@ -178,7 +171,7 @@ contract charity {
     org[org_count].id = org_count;
     org[org_count].hash = hash_address;
     org[org_count].address_of_organisation = _address;
-
+    org[org_count].ether_coins = _ether_coins;
 
     //emit organisationCreated(_name,_bankacc,_bankname,org_count,hash_address,_address);
 
@@ -219,44 +212,43 @@ contract charity {
 */
 
 
-function transaction_org_to_charity(address add_of_charity,address add_of_org,uint amount) public {
 
 
-  uint index_charity = 0;
-  uint index_org = 0;
-  uint flag1=0;
-  uint flag2=0;
+function createTransaction(string memory add_of_charity,string memory add_of_org,string memory amount) public {
 
-  for(uint i =0;i<charity_count;i++) {
-
-    if(charitys[i].address_of_charity == add_of_charity){
-
-        flag1 = 1;
-        index_charity = i;
-
-    }
-  }
-
-  for(uint i = 0;i<org_count;i++) {
-
-      if(org[i].address_of_organisation == add_of_org) {
-          flag2 = 1;
-          index_org = i;
-      }
-
-  }
-
-  if(flag1 == 1 && flag2 ==1){
-
-
-
-  }
-
-
-
-
+    transaction_count++;
+    transaction_dict[transaction_count].address_of_charity = add_of_charity;
+    transaction_dict[transaction_count].address_of_organisation = add_of_org;
+    transaction_dict[transaction_count].amount_sent = amount;
+    transaction_dict[transaction_count].id = transaction_count;
 
 }
 
 
 }
+
+/*
+event charityCreated(
+
+  string name,
+  string description,
+  string bankacc,
+  string bankname,
+  uint id,
+  bytes32 hash,
+  address address_of_charity
+
+);
+
+
+event organisationCreated(
+
+
+  string name,
+  string bankacc,
+  string bankname,
+  uint id,
+  bytes32 hash,
+  string address_of_organisation
+);
+*/

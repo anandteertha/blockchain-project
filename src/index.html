@@ -113,10 +113,35 @@
 		              <span class="content13">the hash: </span><br>
 									<span class="content14">the previous hash: </span><br>
 									<span class="content16">the address: </span><br>
-									<!--<span class="content19">the balance: </span><br> -->
+									<span class="content19">the balance: </span><br>
 		            </label>
 		        </div>
 
+
+						<br><br><br><br>
+
+						<p>Enter the transaction details...</p>
+						<form onSubmit = "App.createTransaction();">
+						  <br>
+						<input id = "add_of_charity" type = "text" class = "form-control" placeholder = "Address of charity..." required>
+						<br>
+						<input id = "add_of_org" type = "text" class = "form-control" placeholder = "Address of organisation ..." required>
+						<br>
+						<input id = "amount" type = "text" class = "form-control" placeholder = "Amount to be transafered..." required>
+						<br>
+						<input type="submit">
+						</form>
+						<br><br><br>
+
+						<div class = "transaction">
+							<label>
+								<span class="content20">the transaction hash : </span><br>
+								<span class="content21">the charity address : </span><br>
+								<span class= "content22">the organisataion address : </span><br>
+								<span class= "content23">the amount in transaction : </span><br>
+								<span class = "content24">the id : </span><br>
+							</label>
+						</div>
 
 
 

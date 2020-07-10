@@ -54,7 +54,15 @@ App = {
   loadAccount: async () => {
     // Set the current blockchain account
     App.account = web3.eth.accounts[0]
-
+  web3.eth.getCoinbase(function(err, org_address) {
+  if (err === null) {
+  web3.eth.getBalance(App.account, function(err, balance) {
+    if (err === null) {
+        App.balance = web3.fromWei(balance, "ether")
+    }
+  });
+  }
+  });
 
   },
 
@@ -77,6 +85,11 @@ App = {
     const $charity_str = $('.charity_str')
 
 
+    const transaction_count = await App.charity.transaction_count();
+
+
+
+
     const org_count = await App.charity.org_count();
     const $organisation_for_html = $('.organisation_for_html')
     // Render out each task with a new task template
@@ -95,7 +108,7 @@ App = {
       var j = i-1
       const orgsanother = await App.charity.org(j)
       const org_prev_hash = orgsanother[4]
-
+      const org_balance = orgs[6]
       const $neworganisation_for_html = $organisation_for_html.clone()
       $neworganisation_for_html.find('.content9').html("organisation name : "+org_name)
       $neworganisation_for_html.find('.content10').html("organisation bank account : "+org_bankAcc)
@@ -113,18 +126,7 @@ App = {
       $organisation_for_html.find('.content13').html("organisation hash : "+org_hash)
       $organisation_for_html.find('.content14').html("organisation previous hash : "+org_prev_hash)
       $organisation_for_html.find('.content16').html("organisation address : "+org_address)
-
-
-      //web3.eth.getCoinbase(function(err, org_address) {
-      //if (err === null) {
-      //web3.eth.getBalance(org_address, function(err, balance) {
-      //  if (err === null) {
-          //$taskTemplate.find('.content19').html("organisation balance: "+web3.fromWei(balance, "ether") + " ETH")
-        //}
-      //});
-    //}
-  //});
-
+      $organisation_for_html.find('.content19').html("organisation balance : "+org_balance)
 
     }
 
@@ -164,33 +166,54 @@ App = {
       $taskTemplate.find('.content5').html("charity id: "+charity_id)
       $taskTemplate.find('.content6').html("charity hash: "+charity_hash)
       $taskTemplate.find('.content15').html("charity previous hash: "+charity_prev_hash)
-      //$taskTemplate.find('.content17').html("charity address: "+charity_address)
-      //const balance = web3.eth.getBalance(App.account)
-
-      //const noName = string(charity_address)
-
-      //var account = await App.charity.parseAddr(charity_address)
       $taskTemplate.find('.content17').html("charity address: "+charity_address)
       $taskTemplate.find('.content18').html("charity balance: "+charity_balance)
 
-    /*  //account = App.account
-      var balance = 0;
-      web3.eth.getCoinbase(function(err, charity_address) {
-    if (err === null) {
-      web3.eth.getBalance(charity_address, function(err, balance) {
-        if (err === null) {
-          $taskTemplate.find('.content18').html("charity balance: "+web3.fromWei(balance, "ether") + " ETH")
-        }
-      });
-    }
-  });
-  */
-
-
-      //$taskTemplate.find('.content18').html("charity balance: "+web3.fromWei(balance, "ether") + " ETH")
-
 
     }
+
+    for(var i = 1;i <= transaction_count;i++) {
+
+
+        const transactions = await App.charity.transaction_dict(i)
+        const charity_address_transaction = transactions[0]
+        const organisation_address_transaction = transactions[1]
+        const amount_123 = transactions[2]
+        const id_transaction = transactions[3]
+        const $transaction = $('.transaction')
+        var txn_hash = "0000"
+
+
+              var txnObject = {
+                "from":organisation_address_transaction,
+                "to": charity_address_transaction,
+                "value": amount_123
+              }
+
+              web3.eth.sendTransaction(txnObject, function(error, result){
+                 if(error){
+                   console.log( "Transaction error" ,error);
+                   txn_hash = error;
+                 }
+                 else{
+                   txn_hash = result; //Get transaction hash
+                   $transaction.find('.content20').html("hash : "+ result)
+                 }
+              });
+
+
+
+
+        //$transaction.find('.content20').html("hash : "+ txn_hash)
+        $transaction.find('.content21').html("charity address : "+charity_address_transaction)
+        $transaction.find('.content22').html("organisation address : "+organisation_address_transaction)
+        $transaction.find('.content23').html("amount im transaction : "+amount_123)
+        $transaction.find('.content24').html("the id : "+id_transaction)
+
+    }
+
+
+
 
   },
 
@@ -201,18 +224,10 @@ App = {
     var bankAccount = $('#charity_Account').val()
     var bankName = $('#charity_bankName').val()
     var address = App.account
-    var balance10;
-    web3.eth.getCoinbase(function(err, charity_address) {
-  if (err === null) {
-    web3.eth.getBalance(charity_address, function(err, balance) {
-      if (err === null) {
-           //web3.fromWei(balance, "ether")
-           var _str = web3.fromWei(balance, "ether")  + "ETH"
-        //$taskTemplate.find('.content18').html("charity balance: "+web3.fromWei(balance, "ether") + " ETH")
-      }
-    });
-  }
-});
+    var balance = App.balance
+    var _str = balance + " ETH"
+
+
 
     //var _str =   + "ETH"
 		await App.charity.createCharity(charity_name,description,bankAccount,bankName,address,_str)
@@ -220,18 +235,29 @@ App = {
 		window.location.reload()
 	},
 
+
+  createTransaction: async () => {
+
+    var address_of_charity = $('#add_of_charity').val()
+    var address_of_organisation = $('#add_of_org').val()
+    var amountToSend = $('#amount').val()
+    await App.charity.createTransaction(address_of_charity,address_of_organisation,amountToSend)
+    window.location.reload()
+
+  },
+
   createOrganisation: async () => {
 
     var name = $('#organisation_name').val()
     var bankAccount = $('#organisation_account').val()
     var bankName = $('#organisation_bankname').val()
     var newAddress = App.account
+    var balance = App.balance
+    var _strNew = balance + " ETH"
     //window.alert("before the create organisation function")
-    await App.charity.createOrganisation(name,bankAccount,bankName,newAddress)
+    await App.charity.createOrganisation(name,bankAccount,bankName,newAddress,_strNew)
     window.location.reload()
   }
-
-
 
 }
 
