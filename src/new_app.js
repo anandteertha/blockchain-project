@@ -194,6 +194,7 @@ App = {
         $transaction.find('.content24').html("the id : "+id_transaction)
 
         const $blockchain = $('.blockchain');
+        //var bk = $('#mine').val()
         const blockchain_count = await App.charity.blockchain_count();
         const blockchain_structure = await App.charity.Blockchain(blockchain_count);
 
@@ -201,6 +202,7 @@ App = {
         const blknum = blockchain_structure[3];
         const theHash = blockchain_structure[4];
         const theprevHash = blockchain_structure[5];
+        var bk = $('#mine').val()
         $blockchain.find('.content25').html("the transaction merkle root : "+transaction_merkle_root)
         $blockchain.find('.content26').html("the block number : "+blknum)
         $blockchain.find('.content27').html("the hash : "+theHash)
